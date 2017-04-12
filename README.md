@@ -69,3 +69,6 @@ Hello, TensorFlow!
 
 
 The TensorFlow community has created amazing things with TensorFlow, please see the [resources section of tensorflow.org](https://www.tensorflow.org/about/#community) for an incomplete list.
+
+
+LG
