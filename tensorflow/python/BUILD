@@ -25,6 +25,7 @@ load("//tensorflow/core:platform/default/build_config.bzl", "tf_proto_library_py
 load("//tensorflow/core:platform/default/build_config.bzl", "tf_additional_lib_deps")
 load("//tensorflow/core:platform/default/build_config_root.bzl", "tf_additional_plugin_deps")
 load("//tensorflow/python:build_defs.bzl", "tf_gen_op_wrapper_private_py")
+load("//tensorflow/core:platform/default/build_config_root.bzl", "tf_additional_verbs_deps")
 
 py_library(
     name = "python",
@@ -60,7 +61,6 @@ py_library(
         ":nn",
         ":platform",
         ":script_ops",
-        ":sdca_ops",
         ":session_ops",
         ":sets",
         ":sparse_ops",
@@ -170,6 +170,8 @@ cc_library(
     hdrs = ["lib/core/ndarray_tensor_bridge.h"],
     deps = [
         ":numpy_lib",
+        "//tensorflow/c:c_api",
+        "//tensorflow/core:lib",
     ],
 )
 
@@ -2268,6 +2270,7 @@ py_library(
         ":random_ops",
         ":resource_variable_ops",
         ":resources",
+        ":sdca_ops",
         ":sparse_ops",
         ":state_ops",
         ":string_ops",
@@ -2574,7 +2577,9 @@ tf_py_wrap_cc(
         "//tensorflow/tools/graph_transforms:transform_graph_lib",
         "//tensorflow/tools/tfprof/internal:print_model_analysis",
         "//util/python:python_headers",
-    ] + tf_additional_lib_deps() + tf_additional_plugin_deps(),
+    ] + (tf_additional_lib_deps() +
+         tf_additional_plugin_deps() +
+         tf_additional_verbs_deps()),
 )
 
 py_library(
@@ -2875,6 +2880,26 @@ cuda_py_test(
     ],
 )
 
+cuda_py_test(
+    name = "moving_averages_test",
+    size = "small",
+    srcs = [
+        "training/moving_averages_test.py",
+    ],
+    additional_deps = [
+        ":array_ops",
+        ":client_testlib",
+        ":constant_op",
+        ":dtypes",
+        ":framework_for_generated_wrappers",
+        ":framework_ops",
+        ":training",
+        ":variable_scope",
+        ":variables",
+    ],
+    tags = ["notsan"],
+)
+
 cuda_py_tests(
     name = "training_tests",
     size = "small",
@@ -2883,13 +2908,13 @@ cuda_py_tests(
         "training/adagrad_da_test.py",
         "training/adagrad_test.py",
         "training/basic_loops_test.py",
+        "training/checkpoint_utils_test.py",
         "training/coordinator_test.py",
         "training/device_setter_test.py",
         "training/ftrl_test.py",
         "training/gradient_descent_test.py",
         "training/learning_rate_decay_test.py",
         "training/momentum_test.py",
-        "training/moving_averages_test.py",
         "training/optimizer_test.py",
         "training/proximal_adagrad_test.py",
         "training/proximal_gradient_descent_test.py",
